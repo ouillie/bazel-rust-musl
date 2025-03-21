@@ -1,0 +1,101 @@
+module(name = "bazel-rust-musl")
+
+bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "toolchains_musl", version = "0.1.20")
+bazel_dep(name = "rules_foreign_cc", version = "0.14.0")
+bazel_dep(name = "rules_rust", version = "0.57.1")
+
+# Only used for formatting BUILD files.
+bazel_dep(name = "buildifier_prebuilt", version = "8.0.1", dev_dependency = True, repo_name = "buildtools")
+
+RUST_EDITION = "2021"
+
+# https://github.com/rust-lang/rust/releases
+RUST_VERSION = "1.80.0"
+
+# https://github.com/openssl/openssl/releases
+OPENSSL_VERSION = "3.4.0"
+
+OPENSSL_INTEGRITY = "sha384-S1P9c57l6dNhdNDxF0E9FWYmhCLgHYFGVjTblHALonDjf3WMBzPKzmU/R19YCfSo"
+
+# https://crates.io/crates/openssl
+RUST_OPENSSL_VERSION = "0.10.71"
+
+# https://crates.io/crates/openssl-sys
+RUST_OPENSSL_SYS_VERSION = "0.9.106"
+
+toolchains_musl = use_extension("@toolchains_musl//:toolchains_musl.bzl", "toolchains_musl")
+toolchains_musl.config(
+    extra_target_compatible_with = ["//:musl"],
+)
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = RUST_EDITION,
+    versions = [RUST_VERSION],
+)
+
+# Set up repository sets for each supported execution / target platform pair:
+# https://github.com/bazelbuild/rules_rust/blob/0.59.1/examples/musl_cross_compiling/MODULE.bazel.
+rust.repository_set(
+    name = "rust_linux_x86_64",
+    edition = RUST_EDITION,
+    exec_triple = "x86_64-unknown-linux-gnu",
+    target_compatible_with = [
+        "//:unknown",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    target_triple = "x86_64-unknown-linux-gnu",
+    versions = [RUST_VERSION],
+)
+rust.repository_set(
+    name = "rust_linux_x86_64",
+    target_compatible_with = [
+        "//:musl",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    target_triple = "x86_64-unknown-linux-musl",
+)
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.spec(
+    package = "openssl",
+    version = RUST_OPENSSL_VERSION,
+)
+crate.spec(
+    package = "openssl-sys",
+    version = RUST_OPENSSL_SYS_VERSION,
+)
+
+# Inspired by https://github.com/bazelbuild/rules_rust/issues/1519#issuecomment-2459048249.
+crate.annotation(
+    build_script_data = [
+        "@@+_repo_rules+openssl//:gen_dir",
+    ],
+    build_script_env = {
+        "OPENSSL_NO_VENDOR": "1",
+        "OPENSSL_LIB_DIR": "$(location @@+_repo_rules+openssl//:gen_dir)/lib64",
+        "OPENSSL_INCLUDE_DIR": "$(location @@+_repo_rules+openssl//:gen_dir)/include",
+        "OPENSSL_STATIC": "1",
+    },
+    crate = "openssl-sys",
+)
+crate.from_specs()
+use_repo(crate, "crates")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "openssl",
+    build_file = "BUILD.openssl.bazel",
+    integrity = OPENSSL_INTEGRITY,
+    strip_prefix = "openssl-{version}".format(version = OPENSSL_VERSION),
+    url = "https://github.com/openssl/openssl/releases/download/openssl-{version}/openssl-{version}.tar.gz".format(
+        version = OPENSSL_VERSION,
+    ),
+)

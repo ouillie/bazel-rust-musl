@@ -1,0 +1,14 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("//:platform-binary.bzl", "platform_binary")
+
+rust_binary(
+    name = "hello",
+    srcs = ["main.rs"],
+    deps = ["@crates//:openssl"],
+)
+
+platform_binary(
+    name = "hello-x86_64-linux-musl",
+    platform = "//:x86_64-linux-musl",
+    target = ":hello",
+)

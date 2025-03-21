@@ -1,0 +1,26 @@
+platform(
+    name = "x86_64-linux-musl",
+    constraint_values = [
+        ":musl",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    visibility = [":__subpackages__"],
+)
+
+constraint_setting(
+    name = "linker",
+    default_constraint_value = ":unknown",
+)
+
+constraint_value(
+    name = "musl",
+    constraint_setting = ":linker",
+    visibility = ["//visibility:public"],
+)
+
+constraint_value(
+    name = "unknown",
+    constraint_setting = ":linker",
+    visibility = ["//visibility:public"],
+)
