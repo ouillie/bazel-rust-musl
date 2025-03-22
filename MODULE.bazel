@@ -75,12 +75,12 @@ crate.spec(
 # Inspired by https://github.com/bazelbuild/rules_rust/issues/1519#issuecomment-2459048249.
 crate.annotation(
     build_script_data = [
-        "@@+_repo_rules+openssl//:gen_dir",
+        "@openssl//:gen_dir",
     ],
     build_script_env = {
         "OPENSSL_NO_VENDOR": "1",
-        "OPENSSL_LIB_DIR": "$(location @@+_repo_rules+openssl//:gen_dir)/lib64",
-        "OPENSSL_INCLUDE_DIR": "$(location @@+_repo_rules+openssl//:gen_dir)/include",
+        "OPENSSL_LIB_DIR": "$(location @openssl//:gen_dir)/lib64",
+        "OPENSSL_INCLUDE_DIR": "$(location @openssl//:gen_dir)/include",
         "OPENSSL_STATIC": "1",
     },
     crate = "openssl-sys",
@@ -99,3 +99,5 @@ http_archive(
         version = OPENSSL_VERSION,
     ),
 )
+
+inject_repo(crate, "openssl")
