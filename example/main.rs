@@ -1,3 +1,5 @@
+use openssl::ssl::{SslMethod, SslConnector};
+
 fn main() {
-    println!("Yo");
+    let connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
 }

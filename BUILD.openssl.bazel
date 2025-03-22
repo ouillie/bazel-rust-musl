@@ -16,6 +16,7 @@ CONFIGURE_OPTIONS = [
     "no-idea",
     "no-weak-ssl-ciphers",
     "no-shared",
+    "-fPIC",
 ]
 
 MAKE_TARGETS = [
