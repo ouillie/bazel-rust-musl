@@ -1,8 +1,8 @@
 module(name = "bazel-rust-musl")
 
+bazel_dep(name = "openssl", version = "3.3.1.bcr.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "toolchains_musl", version = "0.1.20")
-bazel_dep(name = "rules_foreign_cc", version = "0.14.0")
 bazel_dep(name = "rules_rust", version = "0.57.1")
 
 # Only used for formatting BUILD files.
@@ -12,11 +12,6 @@ RUST_EDITION = "2021"
 
 # https://github.com/rust-lang/rust/releases
 RUST_VERSION = "1.80.0"
-
-# https://github.com/openssl/openssl/releases
-OPENSSL_VERSION = "3.4.0"
-
-OPENSSL_INTEGRITY = "sha384-S1P9c57l6dNhdNDxF0E9FWYmhCLgHYFGVjTblHALonDjf3WMBzPKzmU/R19YCfSo"
 
 # https://crates.io/crates/openssl
 RUST_OPENSSL_VERSION = "0.10.71"
@@ -72,7 +67,7 @@ crate.annotation(
     ],
     build_script_env = {
         "OPENSSL_NO_VENDOR": "1",
-        "OPENSSL_LIB_DIR": "$(location @openssl//:gen_dir)/lib64",
+        "OPENSSL_LIB_DIR": "$(location @openssl//:gen_dir)/lib",
         "OPENSSL_INCLUDE_DIR": "$(location @openssl//:gen_dir)/include",
         "OPENSSL_STATIC": "1",
     },
@@ -80,17 +75,5 @@ crate.annotation(
 )
 crate.from_specs()
 use_repo(crate, "crates")
-
-http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "openssl",
-    build_file = "BUILD.openssl.bazel",
-    integrity = OPENSSL_INTEGRITY,
-    strip_prefix = "openssl-{version}".format(version = OPENSSL_VERSION),
-    url = "https://github.com/openssl/openssl/releases/download/openssl-{version}/openssl-{version}.tar.gz".format(
-        version = OPENSSL_VERSION,
-    ),
-)
 
 inject_repo(crate, "openssl")
