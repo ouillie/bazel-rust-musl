@@ -36,7 +36,6 @@ configure_make(
     out_shared_libs = [],
     out_static_libs = ["libssl.a"],
     targets = MAKE_TARGETS,
-    visibility = ["//visibility:public"],
 )
 
 filegroup(
