@@ -21,9 +21,6 @@ OPENSSL_INTEGRITY = "sha384-S1P9c57l6dNhdNDxF0E9FWYmhCLgHYFGVjTblHALonDjf3WMBzPK
 # https://crates.io/crates/openssl
 RUST_OPENSSL_VERSION = "0.10.71"
 
-# https://crates.io/crates/openssl-sys
-RUST_OPENSSL_SYS_VERSION = "0.9.106"
-
 toolchains_musl = use_extension("@toolchains_musl//:toolchains_musl.bzl", "toolchains_musl")
 toolchains_musl.config(
     extra_target_compatible_with = ["//:musl"],
@@ -66,10 +63,6 @@ crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 crate.spec(
     package = "openssl",
     version = RUST_OPENSSL_VERSION,
-)
-crate.spec(
-    package = "openssl-sys",
-    version = RUST_OPENSSL_SYS_VERSION,
 )
 
 # Inspired by https://github.com/bazelbuild/rules_rust/issues/1519#issuecomment-2459048249.
